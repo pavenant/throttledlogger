@@ -1,0 +1,33 @@
+﻿String Interpolation for NewLine
+Timer can be made readonly
+List<Message> is never assigned. --> can be made readonly
+--> We should rahter use a "ConcurrentDictionary" if we are gonig to have potentially a LOT of loggoing going on.
+ThrottledLogger --> implement IDisposible to dispose timer
+ThrottledLogger --> Dispose { _timer?.Dispose(); }
+ThrottledLogger(bool useLog4Net) --> seems restrictive to only "Log4Net and Default". We should be able to supply a ILogger or a list of ILoggers
+
+if (UseLog4Net) --> Logic is the wrong way around!
+With the current implementation the timer will fire every 5 seconds, and this can cause problems if too many threads are running concurrently
+ThrottledLogger --> constructor set _timer.AutoReset = false; to prevent multiple threads flusing the log
+ThrottledLogger --> Timer Event set _timer.Enabled = true at end of processing to enable logging
+If the message buffer get too big we should log an error messge and drop and start with dropping all info messages?
+UseLog4Net = useLog4Net; --> set config before timer start!
+UseLog4Net --> can be private or local variable
+_messages --> multiple threads will cause errors (timer event run in different thread)
+ThrottledLogger --> in callback, we are creating new object in the loop not needed - rather create local private readonly ILogger _logger;
+handling _message
+	        var messagesToLog = _messages; //reference all the messages to be logged 
+            _messages = new List<LogMessage>(); //set current reference to empty new list
+handle null messges? (ignore them?)
+LogMessage --> Equals --> swap && conditions as type is easier to compare.
+LogMessage --> property change type to messageSeverity (more descriptive naming?)
+? Should a flag be used to make sure we complete a callback before we dispose?
+The comment say "the logs should be purged at a configurable interval" - 
+		--So I think the 5 second interval should be supplied by some kid of "config" provider
+LogMessage --> GetHashCode is only imlemented on the "Type" or rather severity.
+
+
+//further thoughts, reative extensions would be a good solution for this!
+//HashSet vs List question
+//We could use a HashSet rather than a List. Both have advantages and disadvantages.
+//I assume order is important, so use a list?
